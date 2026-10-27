@@ -1,5 +1,5 @@
 # Canteen Pre-Order – GitHub Pages + Firebase
-
+web url:-https://adithyan0067.github.io/final-cafe/
 Static site (HTML/CSS/JS modules) hosted on **GitHub Pages**, using **Firebase** for:
 - **Authentication** – email + password for students and the admin
 - **Cloud Firestore** – menu, branding, student profiles and orders (shared by everyone)

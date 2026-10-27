@@ -1,0 +1,38 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // An admin = a document exists at admins/{uid} (created manually in the console)
+    function isAdmin() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Menu + branding: everyone can read, only admins can change
+    match /products/{id} { allow read: if true; allow write: if isAdmin(); }
+    match /settings/{id} { allow read: if true; allow write: if isAdmin(); }
+
+    // Student profile: only the owner (or admin) can read; owner can create/update
+    match /users/{uid} {
+      allow read: if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow create, update: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Orders: students create + read their own; admins read all and change status
+    match /orders/{id} {
+      allow create: if request.auth != null
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.status == 'Pending';
+      allow read:   if request.auth != null
+                    && (resource.data.userId == request.auth.uid || isAdmin());
+      allow update: if isAdmin();
+      allow delete: if false;
+    }
+
+    // Admin list: a user can only check their own entry; nobody can write from the website
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
